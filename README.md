@@ -9,7 +9,7 @@ Animations.jl offers an easy way to set up simple animations where multiple keyf
 are interpolated between in sequence. You can choose different easing functions or
 create your own. Keyframe values can be anything that can be linearly interpolated, you
 can also add your own methods for special types. An easing can have repetitions and
-delays, so that looping animations are simpler to create.
+delays, so that looping animations are simpler to create.cool
 
 Check out the [documentation here](https://jkrumbiegel.github.io/Animations.jl/dev)!
 
