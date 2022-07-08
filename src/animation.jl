@@ -3,7 +3,7 @@ abstract type FiniteLengthAnimation{T} end
 Base.Broadcast.broadcastable(f::FiniteLengthAnimation) = Ref(f)
 
 """
-`Animation{T}`
+    Animation{T}
 
 An Animation that contains a `Vector` of `Keyframe`s and a `Vector` of `Easing`s
 """
@@ -33,7 +33,7 @@ function Animation(differenttype_kfs::Vector{Keyframe}, easings::Vector{Easing})
 end
 
 """
-`Animation(kfs::Vector{Keyframe{T}}, easing::Easing) where T`
+    Animation(kfs::Vector{Keyframe{T}}, easing::Easing) where T
 
 Create an `Animation` from a `Vector` of `Keyframe`s and one `Easing` that is repeated
 for every pair of keyframes.
@@ -120,24 +120,28 @@ timestamps(a::Animation) = [kf.t for kf in a.frames]
 keyframes(a::Animation) = a.frames
 keyvalues(a::Animation) = [kf.value for kf in a.frames]
 
-function at(a::Animation, t::Real)
+function at(a::Animation{T}, t::Real)::T where {T}
     # the first keyframe with a higher time is the second one of the two with
     # t in between (except when t is before the first or after the last keyframe)
     i_first_after_t = findfirst(kf -> kf.t >= t, a.frames)
 
-    if isnothing(i_first_after_t)
+    result = if isnothing(i_first_after_t)
         # t lies after the last keyframe
-        # return a.frames[end].value
-        return interpolate(a.easings[end], t, a.frames[end-1], a.frames[end])
+        interpolate(a.easings[end], t, a.frames[end-1], a.frames[end])
     elseif i_first_after_t == 1
         # t lies before the first keyframe
-        # return a.frames[1].value
-        return interpolate(a.easings[1], t, a.frames[1], a.frames[2])
+        interpolate(a.easings[1], t, a.frames[1], a.frames[2])
     else
         # t lies between two keyframes
         i_from = i_first_after_t - 1
         i_to = i_first_after_t
-        return interpolate(a.easings[i_from], t, a.frames[i_from], a.frames[i_to])
+        interpolate(a.easings[i_from], t, a.frames[i_from], a.frames[i_to])
+    end
+
+    try
+        convert(T, result)
+    catch
+        error("Interpolation result for t = $t of Animation{$T} could not be converted to $T from $(typeof(result)).\nConsider changing the parametric type of the animation to $(typeof(result)).")
     end
 end
 
